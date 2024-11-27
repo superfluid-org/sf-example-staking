@@ -21,19 +21,19 @@ contract MockERC20 is ERC20 {
 }
 
 contract SuperfluidStakingTest is Test {
-    SuperfluidStaking public sfStaking;
-    SuperfluidFrameworkDeployer.Framework public sf;
-    MockERC20 public stakedToken;
-    MockERC20 public rewardsToken;
-    ISuperToken public superRewardsToken;
+    SuperfluidStaking sfStaking;
+    SuperfluidFrameworkDeployer.Framework sf;
+    MockERC20 stakedToken;
+    MockERC20 rewardsToken;
+    ISuperToken superRewardsToken;
 
-    address public owner;
-    address public alice;
-    address public bob;
+    address owner;
+    address alice;
+    address bob;
 
-    uint128 public constant SCALING_FACTOR = 1e10;
-    uint256 public constant INITIAL_BALANCE = 1000000 * 1e18;
-    uint256 public constant STAKE_AMOUNT = 1000 * 1e18;
+    uint128 constant SCALING_FACTOR = 1e10;
+    uint256 constant INITIAL_BALANCE = 1000000 * 1e18;
+    uint256 constant STAKE_AMOUNT = 1000 * 1e18;
 
     function setUp() public {
         vm.etch(ERC1820RegistryCompiled.at, ERC1820RegistryCompiled.bin);
@@ -46,7 +46,7 @@ contract SuperfluidStakingTest is Test {
         bob = address(0x2);
 
         stakedToken = new MockERC20("Staked Token", "STK");
-        
+
         rewardsToken = new MockERC20("Rewards Token", "RWD");
 
         sfStaking = new SuperfluidStaking(
