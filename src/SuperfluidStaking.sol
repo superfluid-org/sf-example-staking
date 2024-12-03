@@ -11,30 +11,31 @@ import "@superfluid-finance/ethereum-contracts/contracts/apps/SuperTokenV1Librar
 import "@superfluid-finance/ethereum-contracts/contracts/superfluid/SuperTokenFactory.sol";
 import "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperTokenFactory.sol";
 
+using SuperTokenV1Library for ISuperToken;
+
 contract ClaimContract {
     ISuperToken public superToken;
-    address public stakingContract;
+    SuperfluidStaking public stakingContract;
     address public staker;
 
     constructor(ISuperToken _superToken, address _stakingContract, address _staker) {
         superToken = _superToken;
-        stakingContract = _stakingContract;
+        stakingContract = SuperfluidStaking(_stakingContract);
         staker = _staker;
     }
 
     function claim() external {
-        require(msg.sender == stakingContract, "Only staking contract can call");
-        SuperTokenV1Library.claimAll(superToken, ISuperfluidPool(stakingContract), address(this));
+        require(msg.sender == address(stakingContract), "Only staking contract can call");
+        superToken.claimAll(stakingContract.pool(), address(this));
     }
 
     function withdrawTo(address to, uint256 amount) external {
-        require(msg.sender == stakingContract, "Only staking contract can call");
+        require(msg.sender == address(stakingContract), "Only staking contract can call");
         superToken.transfer(to, amount);
     }
 }
 
 contract SuperfluidStaking is Ownable {
-    using SuperTokenV1Library for ISuperToken;
 
     IERC20 public underlyingStakedToken;
     IERC20Metadata public underlyingRewardsToken;
