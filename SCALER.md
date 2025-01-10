@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-In Superfluid's staking contract, we encounter a precision issue when distributing rewards. This problem arises from Solidity's inability to handle decimal numbers, potentially leading to a situation where the total flow rate divided by the total units is less than 1, resulting in zero rewards for stakers.
+In Superfluid's staking contract, we encounter a precision issue when distributing rewards. This problem arises from Solidity's inability to handle decimal numbers, potentially leading to a situation where the total flow rate divided by the total units is less than 1, resulting in zero rewards for stakers. For more details, see [Superfluid Docs](https://docs.superfluid.finance/docs/protocol/distributions/guides/pools#about-member-units).
 
 ## Formal Description
 
