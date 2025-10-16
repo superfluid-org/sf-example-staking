@@ -26,7 +26,7 @@ This project implements a staking mechanism where users can:
 - **Framework**: Foundry
 - **Language**: Solidity ^0.8.0
 - **Dependencies**:
-  - OpenZeppelin Contracts (v4.9.3)
+  - OpenZeppelin Contracts (v5)
   - Superfluid Protocol
   - Forge Standard Library
 
@@ -59,11 +59,6 @@ forge build
 ### Test
 ```bash
 forge test
-```
-
-### Deploy
-```bash
-forge script script/Deploy.s.sol:DeployScript --rpc-url <your_rpc_url> --private-key <your_private_key>
 ```
 
 ## Contract Architecture
@@ -105,7 +100,3 @@ forge test --match-test testStake -vvv
 ## License
 
 MIT
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.

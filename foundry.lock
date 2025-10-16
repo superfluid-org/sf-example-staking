@@ -1,0 +1,17 @@
+{
+  "lib/forge-std": {
+    "rev": "1714bee72e286e73f76e320d110e0eaf5c4e649d"
+  },
+  "lib/openzeppelin-contracts": {
+    "rev": "fd81a96f01cc42ef1c9a5399364968d0e07e9e90"
+  },
+  "lib/openzeppelin-contracts-v5": {
+    "branch": {
+      "name": "release-v5.5",
+      "rev": "f1081f922ac08dda41c598ae230f3ca3c9d50f9c"
+    }
+  },
+  "lib/superfluid-protocol-monorepo": {
+    "rev": "0ed2d5cefc095f3da416f15da3c7aaee2b3dfdfa"
+  }
+}

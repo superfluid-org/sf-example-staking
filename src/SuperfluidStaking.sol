@@ -1,15 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.24;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetFixedSupply.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
-import "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperToken.sol";
-import "@superfluid-finance/ethereum-contracts/contracts/apps/SuperTokenV1Library.sol";
-import "@superfluid-finance/ethereum-contracts/contracts/superfluid/SuperTokenFactory.sol";
-import "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperTokenFactory.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { ISuperToken, ISuperfluidPool, PoolConfig, ISuperTokenFactory, IERC20, IERC20Metadata } from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
+import { SuperTokenV1Library } from "@superfluid-finance/ethereum-contracts/contracts/apps/SuperTokenV1Library.sol";
 
 /// @title ClaimContract
 /// @notice This contract is created for each staker to manage their rewards
@@ -81,7 +75,7 @@ contract SuperfluidStaking is Ownable {
         IERC20Metadata _underlyingRewardsToken,
         ISuperTokenFactory _superTokenFactory,
         uint128 _scalingFactor
-    ) {
+    ) Ownable(_msgSender()) {
         underlyingStakedToken = _underlyingStakedToken;
         underlyingRewardsToken = _underlyingRewardsToken;
         superTokenFactory = _superTokenFactory;
@@ -139,7 +133,7 @@ contract SuperfluidStaking is Ownable {
         }
 
         // Update the user's units in the Superfluid pool
-        superToken.updateMemberUnits(pool, address(claimContracts[msg.sender]), uint128(stakedAmounts[msg.sender])/scalingFactor);
+        pool.updateMemberUnits(address(claimContracts[msg.sender]), uint128(stakedAmounts[msg.sender])/scalingFactor);
 
         emit Staked(msg.sender, amount);
     }
@@ -154,7 +148,7 @@ contract SuperfluidStaking is Ownable {
         stakedAmounts[msg.sender] -= amount;
 
         // Update the user's units in the Superfluid pool
-        superToken.updateMemberUnits(pool, address(claimContracts[msg.sender]), uint128(stakedAmounts[msg.sender])/scalingFactor);
+        pool.updateMemberUnits(address(claimContracts[msg.sender]), uint128(stakedAmounts[msg.sender])/scalingFactor);
 
         superToken.downgrade(amount);
         underlyingStakedToken.transfer(msg.sender, amount);
