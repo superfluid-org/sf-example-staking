@@ -1,6 +1,8 @@
 name: test
 
-on: workflow_dispatch
+on:
+  push:
+  workflow_dispatch:
 
 env:
   FOUNDRY_PROFILE: ci
@@ -20,12 +22,12 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: v1.4.1
 
       - name: Run Forge build
+        # do not enforce EIP-170 (max code size) for test contracts
         run: |
-          forge --version
-          forge build --sizes
+          forge build --sizes --skip test
         id: build
 
       - name: Run Forge tests
