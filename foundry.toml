@@ -11,3 +11,7 @@ remappings = [
     "@openzeppelin-v5/=lib/openzeppelin-contracts/",
     "@superfluid-finance/=lib/superfluid-protocol-monorepo/packages"
 ]
+
+# Lint configuration
+[lint]
+ignore = ["test/**/*.sol"]

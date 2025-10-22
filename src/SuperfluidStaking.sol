@@ -2,7 +2,17 @@
 pragma solidity ^0.8.24;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { ISuperToken, ISuperfluidPool, PoolConfig, ISuperTokenFactory, IERC20, IERC20Metadata } from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+
+import {
+    ISuperToken,
+    ISuperfluidPool,
+    PoolConfig,
+    ISuperTokenFactory,
+    IERC20,
+    IERC20Metadata
+} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 import { SuperTokenV1Library } from "@superfluid-finance/ethereum-contracts/contracts/apps/SuperTokenV1Library.sol";
 
 /// @title ClaimContract
@@ -38,7 +48,7 @@ contract ClaimContract {
     /// @param amount The amount of rewards to withdraw
     function withdrawTo(address to, uint256 amount) external {
         require(msg.sender == stakingContract, "Only staking contract can call");
-        superToken.transfer(to, amount);
+        require(superToken.transfer(to, amount), "Transfer failed");
     }
 }
 
@@ -46,6 +56,8 @@ contract ClaimContract {
 /// @notice A staking contract that uses Superfluid for reward distribution
 contract SuperfluidStaking is Ownable {
     using SuperTokenV1Library for ISuperToken;
+    using SafeERC20 for IERC20;
+    using SafeERC20 for IERC20Metadata;
 
     IERC20 public underlyingStakedToken;
     IERC20Metadata public underlyingRewardsToken;
@@ -105,11 +117,11 @@ contract SuperfluidStaking is Ownable {
     function supplyFunds(uint256 amount, uint256 duration) external onlyOwner {
         require(duration > 0, "Duration must be greater than 0");
 
-        underlyingRewardsToken.transferFrom(msg.sender, address(this), amount);
-        underlyingRewardsToken.approve(address(superToken), amount);
+        underlyingRewardsToken.safeTransferFrom(msg.sender, address(this), amount);
+        underlyingRewardsToken.safeIncreaseAllowance(address(superToken), amount);
         superToken.upgrade(amount);
 
-        int96 newFlowRate = int96(int256(superToken.balanceOf(address(this)) / duration));
+        int96 newFlowRate = SafeCast.toInt96(SafeCast.toInt256(superToken.balanceOf(address(this)) / duration));
         superToken.distributeFlow(address(this), pool, newFlowRate);
 
         flowRate = newFlowRate;
@@ -125,7 +137,7 @@ contract SuperfluidStaking is Ownable {
         totalStaked += amount;
         stakedAmounts[msg.sender] += amount;
 
-        underlyingStakedToken.transferFrom(msg.sender, address(this), amount);
+        underlyingStakedToken.safeTransferFrom(msg.sender, address(this), amount);
 
         // Create a new ClaimContract for the user if they don't have one
         if (address(claimContracts[msg.sender]) == address(0)) {
@@ -151,7 +163,7 @@ contract SuperfluidStaking is Ownable {
         pool.updateMemberUnits(address(claimContracts[msg.sender]), uint128(stakedAmounts[msg.sender])/scalingFactor);
 
         superToken.downgrade(amount);
-        underlyingStakedToken.transfer(msg.sender, amount);
+        underlyingStakedToken.safeTransfer(msg.sender, amount);
 
         emit Unstaked(msg.sender, amount);
     }
@@ -165,7 +177,7 @@ contract SuperfluidStaking is Ownable {
         uint256 claimedAmount = superToken.balanceOf(address(claimContract));
         claimContract.withdrawTo(address(this), claimedAmount);
         superToken.downgrade(claimedAmount);
-        underlyingRewardsToken.transfer(msg.sender, claimedAmount);
+        underlyingRewardsToken.safeTransfer(msg.sender, claimedAmount);
 
         emit RewardsClaimed(msg.sender, claimedAmount);
     }
@@ -174,7 +186,7 @@ contract SuperfluidStaking is Ownable {
     /// @param token The token to withdraw
     function emergencyWithdraw(IERC20 token) external onlyOwner {
         uint256 balance = token.balanceOf(address(this));
-        token.transfer(owner(), balance);
+        token.safeTransfer(owner(), balance);
     }
 
     // Getter functions
