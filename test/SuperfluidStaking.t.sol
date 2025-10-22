@@ -3,13 +3,17 @@ pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 import "../src/SuperfluidStaking.sol";
-import { ERC1820RegistryCompiled } from "@superfluid-finance/ethereum-contracts/contracts/libs/ERC1820RegistryCompiled.sol";
-import { SuperfluidFrameworkDeployer } from "@superfluid-finance/ethereum-contracts/contracts/utils/SuperfluidFrameworkDeployer.t.sol";
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {
+    ERC1820RegistryCompiled
+} from "@superfluid-finance/ethereum-contracts/contracts/libs/ERC1820RegistryCompiled.sol";
+import {
+    SuperfluidFrameworkDeployer
+} from "@superfluid-finance/ethereum-contracts/contracts/utils/SuperfluidFrameworkDeployer.t.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MockERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {
-        _mint(msg.sender, 1000000 * 10**decimals());
+        _mint(msg.sender, 1000000 * 10 ** decimals());
     }
 
     function mint(address to, uint256 amount) public {
@@ -43,14 +47,11 @@ contract SuperfluidStakingTest is Test {
         bob = address(0x2);
 
         stakedToken = new MockERC20("Staked Token", "STK");
-        
+
         rewardsToken = new MockERC20("Rewards Token", "RWD");
 
         sfStaking = new SuperfluidStaking(
-            IERC20(address(stakedToken)),
-            IERC20Metadata(address(rewardsToken)),
-            sf.superTokenFactory,
-            SCALING_FACTOR
+            IERC20(address(stakedToken)), IERC20Metadata(address(rewardsToken)), sf.superTokenFactory, SCALING_FACTOR
         );
 
         superRewardsToken = sfStaking.superToken();
@@ -81,7 +82,7 @@ contract SuperfluidStakingTest is Test {
         vm.startPrank(owner);
         sfStaking.supplyFunds(amount, duration);
         vm.stopPrank();
-        
+
         assertEq(sfStaking.getFlowRate(), int96(int256(amount / duration)));
         assertEq(superRewardsToken.balanceOf(address(sfStaking)), amount);
     }

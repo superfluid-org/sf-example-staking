@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import {
     ISuperToken,
@@ -13,7 +13,7 @@ import {
     IERC20,
     IERC20Metadata
 } from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
-import { SuperTokenV1Library } from "@superfluid-finance/ethereum-contracts/contracts/apps/SuperTokenV1Library.sol";
+import {SuperTokenV1Library} from "@superfluid-finance/ethereum-contracts/contracts/apps/SuperTokenV1Library.sol";
 
 /// @title ClaimContract
 /// @notice This contract is created for each staker to manage their rewards
@@ -35,11 +35,7 @@ contract ClaimContract {
     /// @dev Can only be called by the main staking contract
     function claim() external {
         require(msg.sender == stakingContract, "Only staking contract can call");
-        SuperTokenV1Library.claimAll(
-            superToken, 
-            SuperfluidStaking(stakingContract).pool(),
-            address(this)
-        );
+        SuperTokenV1Library.claimAll(superToken, SuperfluidStaking(stakingContract).pool(), address(this));
     }
 
     /// @notice Withdraws claimed rewards to a specified address
@@ -92,23 +88,20 @@ contract SuperfluidStaking is Ownable {
         underlyingRewardsToken = _underlyingRewardsToken;
         superTokenFactory = _superTokenFactory;
         scalingFactor = _scalingFactor;
-        
+
         // Create a wrapped super token for rewards
-        superToken = ISuperToken(superTokenFactory.createERC20Wrapper(
-            underlyingRewardsToken,
-            ISuperTokenFactory.Upgradability.SEMI_UPGRADABLE,
-            "Super Rewards",
-            "RWDx"
-        ));
+        superToken = ISuperToken(
+            superTokenFactory.createERC20Wrapper(
+                underlyingRewardsToken, ISuperTokenFactory.Upgradability.SEMI_UPGRADABLE, "Super Rewards", "RWDx"
+            )
+        );
 
         // Create a Superfluid pool for distributing rewards
-        pool = ISuperfluidPool(superToken.createPool(
-            address(this),
-            PoolConfig({
-                transferabilityForUnitsOwner: false,
-                distributionFromAnyAddress: true
-            })
-        ));
+        pool = ISuperfluidPool(
+            superToken.createPool(
+                address(this), PoolConfig({transferabilityForUnitsOwner: false, distributionFromAnyAddress: true})
+            )
+        );
     }
 
     /// @notice Allows the owner to supply funds for rewards
@@ -145,7 +138,7 @@ contract SuperfluidStaking is Ownable {
         }
 
         // Update the user's units in the Superfluid pool
-        pool.updateMemberUnits(address(claimContracts[msg.sender]), uint128(stakedAmounts[msg.sender])/scalingFactor);
+        pool.updateMemberUnits(address(claimContracts[msg.sender]), uint128(stakedAmounts[msg.sender]) / scalingFactor);
 
         emit Staked(msg.sender, amount);
     }
@@ -160,7 +153,7 @@ contract SuperfluidStaking is Ownable {
         stakedAmounts[msg.sender] -= amount;
 
         // Update the user's units in the Superfluid pool
-        pool.updateMemberUnits(address(claimContracts[msg.sender]), uint128(stakedAmounts[msg.sender])/scalingFactor);
+        pool.updateMemberUnits(address(claimContracts[msg.sender]), uint128(stakedAmounts[msg.sender]) / scalingFactor);
 
         superToken.downgrade(amount);
         underlyingStakedToken.safeTransfer(msg.sender, amount);
